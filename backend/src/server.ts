@@ -1,12 +1,22 @@
 import 'reflect-metadata';
-import dotenv from 'dotenv';
+import 'dotenv/config';
 import { app } from './app';
-
-dotenv.config();
+import { AppDataSource } from './config/database';
 
 const port = Number(process.env.PORT || 4000);
 
-app.listen(port, () => {
-  // Infrastructure phase: simple startup log.
-  console.log(`Backend listening on port ${port}`);
-});
+const bootstrap = async (): Promise<void> => {
+  try {
+    await AppDataSource.initialize();
+    console.log('Connected to DB');
+
+    app.listen(port, () => {
+      console.log(`Backend listening on port ${port}`);
+    });
+  } catch (error) {
+    console.error('Failed to initialize server:', error);
+    process.exit(1);
+  }
+};
+
+void bootstrap();
