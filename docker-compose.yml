@@ -1,4 +1,5 @@
 version: "3.9"
+
 services:
   db:
     image: postgres:16-alpine
@@ -19,7 +20,8 @@ services:
     depends_on:
       - db
     volumes:
-      - ./backend/src:/app/src
+      - ./backend:/app
+      - /app/node_modules
 
   frontend:
     build: ./frontend
@@ -28,7 +30,9 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./frontend/src:/app/src
+      - ./frontend:/app
+      - /app/node_modules
 
 volumes:
   pgdata:
+    
