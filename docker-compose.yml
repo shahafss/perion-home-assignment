@@ -4,9 +4,9 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-auth_db}
     ports:
       - "5432:5432"
     volumes:
@@ -15,6 +15,11 @@ services:
   backend:
     build: ./backend
     env_file: .env
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
     ports:
       - "4000:4000"
     depends_on:
@@ -25,6 +30,8 @@ services:
 
   frontend:
     build: ./frontend
+    environment:
+      - VITE_API_URL=http://backend:4000
     ports:
       - "5173:5173"
     depends_on:
@@ -35,4 +42,3 @@ services:
 
 volumes:
   pgdata:
-    
