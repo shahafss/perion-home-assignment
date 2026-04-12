@@ -1,8 +1,8 @@
 import {
+  Column,
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  Column,
   UpdateDateColumn
 } from 'typeorm';
 
@@ -14,6 +14,7 @@ export class User {
   @Column({ type: 'varchar', length: 255, unique: true })
   email!: string;
 
+  // Prevent password hash from being loaded unless explicitly selected.
   @Column({ type: 'varchar', select: false })
   password!: string;
 

@@ -1,29 +1,30 @@
-import axios from 'axios';
-import { useAuth } from '../composables/useAuth';
+import axios, { AxiosResponse } from "axios";
+import { useAuth } from "../composables/useAuth";
+
+interface ApiEnvelope<T> {
+  success: boolean;
+  timestamp: string;
+  path: string;
+  data: T;
+}
 
 export const apiClient = axios.create({
-  baseURL: '/api'
+  baseURL: "/api",
+  withCredentials: true,
 });
 
-apiClient.interceptors.request.use((config) => {
-  const { token } = useAuth();
-  if (token.value) {
-    config.headers = config.headers ?? {};
-    config.headers.Authorization = `Bearer ${token.value}`;
-  }
-  return config;
-});
+const unwrapResponse = <T>(response: AxiosResponse<ApiEnvelope<T>>): T =>
+  response.data.data;
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  unwrapResponse as unknown as (
+    value: AxiosResponse
+  ) => AxiosResponse | Promise<AxiosResponse>,
   (error) => {
     if (error?.response?.status === 401) {
       const { logout } = useAuth();
       logout();
-      if (window.location.pathname !== '/login') {
-        window.location.assign('/login');
-      }
     }
     return Promise.reject(error);
-  }
+  },
 );

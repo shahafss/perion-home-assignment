@@ -6,7 +6,6 @@ export interface AuthUser {
 }
 
 export interface AuthApiResponse {
-  token: string;
   user: AuthUser;
 }
 
@@ -14,20 +13,37 @@ export const apiSignup = async (
   email: string,
   password: string
 ): Promise<AuthApiResponse> => {
-  const response = await apiClient.post<AuthApiResponse>('/auth/signup', {
+  const response = await apiClient.post<
+    AuthApiResponse,
+    AuthApiResponse
+  >('/auth/signup', {
     email,
     password
   });
-  return response.data;
+  return response;
 };
 
 export const apiLogin = async (
   email: string,
   password: string
 ): Promise<AuthApiResponse> => {
-  const response = await apiClient.post<AuthApiResponse>('/auth/login', {
+  const response = await apiClient.post<
+    AuthApiResponse,
+    AuthApiResponse
+  >('/auth/login', {
     email,
     password
   });
-  return response.data;
+  return response;
+};
+
+export const apiMe = async (): Promise<AuthApiResponse> => {
+  const response = await apiClient.get<AuthApiResponse, AuthApiResponse>(
+    '/auth/me'
+  );
+  return response;
+};
+
+export const apiLogout = async (): Promise<void> => {
+  await apiClient.post<{ message: string }, { message: string }>('/auth/logout');
 };
