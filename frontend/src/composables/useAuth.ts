@@ -57,9 +57,6 @@ export function useAuth() {
     void apiLogout();
     token.value = null;
     user.value = null;
-    if (window.location.pathname !== "/login") {
-      window.location.assign("/login");
-    }
   };
 
   return {

@@ -1,5 +1,6 @@
 import { css } from "@emotion/css";
 import { defineComponent, onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import { AxiosError } from "axios";
 import { useAuth } from "../composables/useAuth";
 import { apiGetDashboardStats, type CampaignStats } from "../api/dashboard";
@@ -7,6 +8,7 @@ import { apiGetDashboardStats, type CampaignStats } from "../api/dashboard";
 export default defineComponent({
   name: "DashboardView",
   setup() {
+    const router = useRouter();
     const auth = useAuth();
     const campaigns = ref<CampaignStats[]>([]);
     const loading = ref(true);
@@ -30,8 +32,9 @@ export default defineComponent({
       void loadStats();
     });
 
-    const onLogout = (): void => {
+    const onLogout = async (): Promise<void> => {
       auth.logout();
+      await router.push("/login");
     };
 
     return () => (
