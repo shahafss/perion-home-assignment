@@ -15,7 +15,7 @@ export class DashboardController {
   } {
     return {
       user: {
-        id: request.user.sub,
+        id: request.user.id,
         email: request.user.email
       }
     };

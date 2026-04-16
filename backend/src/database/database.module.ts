@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Role } from '../entities/Role';
 import { User } from '../entities/User';
 
 @Module({
@@ -11,7 +12,7 @@ import { User } from '../entities/User';
       username: process.env.DB_USER ?? 'postgres',
       password: process.env.DB_PASSWORD ?? 'postgres',
       database: process.env.DB_NAME ?? 'auth_db',
-      entities: [User],
+      entities: [User, Role],
       synchronize: process.env.DB_SYNCHRONIZE === 'true'
     })
   ]

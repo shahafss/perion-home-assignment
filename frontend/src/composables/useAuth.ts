@@ -9,36 +9,29 @@ import {
 } from "../api/auth";
 
 const COOKIE_SESSION_TOKEN = "cookie-session";
+
 const token = ref<string | null>(null);
 const user = ref<AuthUser | null>(null);
-const initPromise = ref<Promise<void> | null>(null);
+const initialized = ref(false);
 
 export function useAuth() {
   const isAuthenticated = computed(() => !!token.value && !!user.value);
 
-  const init = async (): Promise<void> => {
-    if (initPromise.value) {
-      await initPromise.value;
-      return;
-    }
-
-    initPromise.value = (async () => {
-      try {
-        const result = await apiMe();
-        token.value = COOKIE_SESSION_TOKEN;
-        user.value = result.user;
-      } catch (error) {
-        if (error instanceof AxiosError && error.response?.status === 401) {
-          token.value = null;
-          user.value = null;
-          return;
-        }
-
+  const fetchUser = async (): Promise<void> => {
+    try {
+      const result = await apiMe();
+      token.value = COOKIE_SESSION_TOKEN;
+      user.value = result.user;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
+        token.value = null;
+        user.value = null;
+      } else {
         throw error;
       }
-    })();
-
-    await initPromise.value;
+    } finally {
+      initialized.value = true;
+    }
   };
 
   const login = async (email: string, password: string): Promise<void> => {
@@ -62,8 +55,9 @@ export function useAuth() {
   return {
     token,
     user,
+    initialized,
     isAuthenticated,
-    init,
+    fetchUser,
     login,
     signup,
     logout,

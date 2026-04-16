@@ -5,7 +5,7 @@ import { AxiosError } from "axios";
 import { useAuth } from "../composables/useAuth";
 import { apiGetDashboardStats, type CampaignStats } from "../api/dashboard";
 
-export default defineComponent({
+export const DashboardView = defineComponent({
   name: "DashboardView",
   setup() {
     const router = useRouter();
@@ -86,6 +86,8 @@ export default defineComponent({
     );
   },
 });
+
+export default DashboardView;
 
 const pageContainer = css({
   maxWidth: "980px",

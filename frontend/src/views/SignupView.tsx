@@ -11,7 +11,7 @@ const getErrorMessage = (error: unknown): string => {
   return fallback;
 };
 
-export default defineComponent({
+export const SignupView = defineComponent({
   name: 'SignupView',
   setup() {
     const router = useRouter();
@@ -81,3 +81,5 @@ export default defineComponent({
     );
   }
 });
+
+export default SignupView;

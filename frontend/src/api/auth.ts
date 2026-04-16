@@ -1,8 +1,16 @@
 import { apiClient } from './axios';
 
+export interface AuthRole {
+  id: string;
+  name: string;
+  permissions: string[];
+}
+
 export interface AuthUser {
   id: string;
+  name: string;
   email: string;
+  role: AuthRole | null;
 }
 
 export interface AuthApiResponse {
