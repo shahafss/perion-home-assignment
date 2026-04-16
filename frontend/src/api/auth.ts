@@ -17,6 +17,13 @@ export interface AuthApiResponse {
   user: AuthUser;
 }
 
+export const apiSelectUser = async (email: string): Promise<void> => {
+  await apiClient.post<{ success: boolean }, { success: boolean }>(
+    '/auth/select',
+    { email }
+  );
+};
+
 export const apiSignup = async (
   email: string,
   password: string
@@ -24,10 +31,7 @@ export const apiSignup = async (
   const response = await apiClient.post<
     AuthApiResponse,
     AuthApiResponse
-  >('/auth/signup', {
-    email,
-    password
-  });
+  >('/auth/signup', { email, password });
   return response;
 };
 
@@ -38,10 +42,7 @@ export const apiLogin = async (
   const response = await apiClient.post<
     AuthApiResponse,
     AuthApiResponse
-  >('/auth/login', {
-    email,
-    password
-  });
+  >('/auth/login', { email, password });
   return response;
 };
 

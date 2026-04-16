@@ -5,10 +5,9 @@ declare module 'vue-router' {
     requiresAuth?: boolean;
     guestOnly?: boolean;
     /**
-     * List of permission strings the authenticated user must possess.
-     * All listed permissions must be present (AND logic).
-     * Example: ['users:view', 'users:edit']
+     * A single permission string the authenticated user must possess.
+     * Example: 'users:create'
      */
-    permissions?: string[];
+    permission?: string;
   }
 }

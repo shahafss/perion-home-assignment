@@ -1,15 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { LoginView } from '../views/LoginView';
-import { SignupView } from '../views/SignupView';
 import { DashboardView } from '../views/DashboardView';
 import { ForbiddenView } from '../views/ForbiddenView';
 import { useAuth } from '../composables/useAuth';
+import { usePermissions } from '../composables/usePermissions';
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    { path: '/', redirect: '/login' },
     { path: '/login', component: LoginView, meta: { guestOnly: true } },
-    { path: '/signup', component: SignupView, meta: { guestOnly: true } },
     {
       path: '/dashboard',
       component: DashboardView,
@@ -37,13 +37,9 @@ router.beforeEach(async (to, _from, next) => {
     return;
   }
 
-  const requiredPermissions = to.meta.permissions;
-  if (requiredPermissions && requiredPermissions.length > 0) {
-    const userPermissions = auth.user.value?.role?.permissions ?? [];
-    const hasAll = requiredPermissions.every((p) =>
-      userPermissions.includes(p),
-    );
-    if (!hasAll) {
+  if (to.meta.permission) {
+    const { hasPermission } = usePermissions();
+    if (!hasPermission(to.meta.permission)) {
       next('/403');
       return;
     }

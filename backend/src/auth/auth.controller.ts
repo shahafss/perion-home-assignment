@@ -51,16 +51,19 @@ export class AuthController {
 
   /**
    * POST /api/auth/select
-   * Accepts { email }, finds the matching user, and returns a signed JWT
-   * containing the user's ID and role permissions. No password required.
+   * Accepts { email }, finds the matching pre-seeded user, signs a JWT, and
+   * sets it as an httpOnly cookie — identical cookie semantics to login/signup.
+   * No password required (assessment convenience endpoint).
    */
   @Post('select')
   @HttpCode(HttpStatus.OK)
   async select(
-    @Body() body: SelectAuthDto
-  ): Promise<{ access_token: string }> {
+    @Body() body: SelectAuthDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<{ success: boolean }> {
     const access_token = await this.authService.selectUser(body.email);
-    return { access_token };
+    this.setAuthCookie(response, access_token);
+    return { success: true };
   }
 
   // ─── Current user ────────────────────────────────────────────────────────────
