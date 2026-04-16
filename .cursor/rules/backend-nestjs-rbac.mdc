@@ -1,0 +1,22 @@
+---
+description: Backend NestJS and RBAC conventions
+globs: backend/src/**/*.ts
+alwaysApply: false
+---
+
+# Backend Standards (NestJS + TypeORM)
+
+- Follow NestJS module/service/controller patterns and keep logic layered.
+- Use TypeORM entities and DTOs with explicit, strongly typed contracts.
+- Prefer clean, scalable patterns aligned with SOLID and DRY principles.
+
+# RBAC and Security
+
+- Enforce role-based access with the custom `@Permissions` decorator.
+- Protect permissioned routes with `PermissionsGuard`.
+- Keep authenticated request and JWT payload interfaces explicit and minimal.
+
+# Local Development Seeding
+
+- Keep seeding logic idempotent so reruns do not duplicate data.
+- Use deterministic role/user bootstrap behavior for consistent local setups.
