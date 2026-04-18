@@ -49,8 +49,6 @@ export const MyComponent = defineComponent({
   },
 });
 
-// --- STYLES ---
-
 const containerStyle = css({
   display: 'flex',
   padding: '1rem'

@@ -1,5 +1,4 @@
 import {
-  ConflictException,
   Injectable,
   NotFoundException,
   UnauthorizedException
@@ -20,18 +19,13 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) {}
 
-  // ─── Legacy password-based auth (kept for backwards compatibility) ───────────
-
   async signup(email: string, password: string): Promise<PublicUser> {
     const normalizedEmail = this.normalizeEmail(email);
-    const existingUser = await this.userService.findByEmail(normalizedEmail);
-
-    if (existingUser) {
-      throw new ConflictException('Email is already registered');
-    }
-
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await this.userService.createUser(normalizedEmail, passwordHash);
+    const user = await this.userService.create(
+      { name: normalizedEmail, email: normalizedEmail },
+      passwordHash
+    );
     return this.toPublicUser(user);
   }
 
@@ -71,7 +65,6 @@ export class AuthService {
 
   // ─── Token helpers ───────────────────────────────────────────────────────────
 
-  /** Signs a JWT for a PublicUser (used by legacy signup/login flow). */
   getAccessToken(user: PublicUser): string {
     const payload: JwtPayload = {
       sub: user.id,

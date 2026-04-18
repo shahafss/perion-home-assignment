@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { LoginView } from '../views/LoginView';
+import { SignupView } from '../views/SignupView';
 import { DashboardView } from '../views/DashboardView';
 import { ForbiddenView } from '../views/ForbiddenView';
 import { useAuth } from '../composables/useAuth';
@@ -10,6 +11,7 @@ const router = createRouter({
   routes: [
     { path: '/', redirect: '/login' },
     { path: '/login', component: LoginView, meta: { guestOnly: true } },
+    { path: '/signup', component: SignupView, meta: { guestOnly: true } },
     {
       path: '/dashboard',
       component: DashboardView,

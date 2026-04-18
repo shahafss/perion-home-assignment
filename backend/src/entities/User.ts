@@ -20,10 +20,7 @@ export class User {
   @Column({ type: 'varchar', length: 255, unique: true })
   email!: string;
 
-  /**
-   * Password is kept nullable so that RBAC-seeded users (no password) coexist
-   * with any legacy password-based accounts. Not selected by default.
-   */
+  /** Not selected by default to avoid accidentally leaking the hash. */
   @Column({ type: 'varchar', select: false, nullable: true })
   password!: string | null;
 
@@ -31,9 +28,9 @@ export class User {
    * Eagerly loaded so that every `findOne` / `find` call automatically
    * includes the role and its permissions — no manual `relations` option needed.
    */
-  @ManyToOne(() => Role, { eager: true, nullable: true })
+  @ManyToOne(() => Role, { eager: true, nullable: false })
   @JoinColumn({ name: 'roleId' })
-  role!: Role | null;
+  role!: Role;
 
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;

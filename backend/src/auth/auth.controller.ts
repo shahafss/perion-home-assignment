@@ -24,8 +24,6 @@ const ACCESS_TOKEN_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // ─── Legacy password auth (kept for backwards compatibility) ────────────────
-
   @Post('signup')
   async signup(
     @Body() body: AuthCredentialsDto,

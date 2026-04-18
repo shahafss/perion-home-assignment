@@ -11,7 +11,7 @@ interface JwtRequestLike {
 }
 
 /**
- * Extracts the JWT from either the `access_token` cookie (legacy cookie-auth)
+ * Extracts the JWT from either the `access_token` cookie
  * or the `Authorization: Bearer <token>` header.
  */
 const cookieOrBearerExtractor = (req: JwtRequestLike): string | null => {

@@ -8,7 +8,7 @@ export class CreateUserDto {
   @IsEmail({}, { message: 'email must be a valid email address' })
   email!: string;
 
-  /** Assign an existing role by its UUID. Optional — user can be created without a role. */
+  /** Assign an existing role by its UUID. Defaults to the "Viewer" role when omitted. */
   @IsOptional()
   @IsUUID('4', { message: 'roleId must be a valid UUID' })
   roleId?: string;

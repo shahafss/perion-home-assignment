@@ -6,10 +6,10 @@ import {
   apiMe,
   apiSelectUser,
   apiSignup,
-  type AuthUser,
 } from "../api/auth";
+import { type User } from "../types/auth";
 
-const user = ref<AuthUser | null>(null);
+const user = ref<User | null>(null);
 const initialized = ref(false);
 
 export function useAuth() {

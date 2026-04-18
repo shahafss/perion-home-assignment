@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +10,8 @@ import { Role } from '../entities/Role';
 import { User } from '../entities/User';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+
+const DEFAULT_ROLE_NAME = 'Viewer';
 
 @Injectable()
 export class UserService {
@@ -45,27 +48,21 @@ export class UserService {
 
   // ─── Write ───────────────────────────────────────────────────────────────────
 
-  /** Creates a user via the admin users:create endpoint. */
-  async create(dto: CreateUserDto): Promise<User> {
-    const existing = await this.userRepository.findOne({
-      where: { email: dto.email }
-    });
+  /**
+   * Creates a user with a mandatory role. 
+   * Defaults to 'Viewer' if no roleId is provided (e.g., during signup).
+   */
+  async create(dto: CreateUserDto, password?: string): Promise<User> {
+    const existing = await this.userRepository.findOne({ where: { email: dto.email } });
     if (existing) {
       throw new ConflictException(`Email "${dto.email}" is already in use`);
     }
 
-    let role: Role | null = null;
-    if (dto.roleId) {
-      role = await this.roleRepository.findOne({ where: { id: dto.roleId } });
-      if (!role) {
-        throw new NotFoundException(`Role with id "${dto.roleId}" not found`);
-      }
-    }
+    const role = await this.getRoleByIdOrName(dto.roleId, DEFAULT_ROLE_NAME);
 
     const user = this.userRepository.create({
-      name: dto.name,
-      email: dto.email,
-      password: null,
+      ...dto,
+      password: password ?? null,
       role
     });
 
@@ -94,13 +91,7 @@ export class UserService {
     }
 
     if (dto.roleId !== undefined) {
-      const role = await this.roleRepository.findOne({
-        where: { id: dto.roleId }
-      });
-      if (!role) {
-        throw new NotFoundException(`Role with id "${dto.roleId}" not found`);
-      }
-      user.role = role;
+      user.role = await this.getRoleByIdOrName(dto.roleId);
     }
 
     return this.userRepository.save(user);
@@ -114,16 +105,27 @@ export class UserService {
     await this.userRepository.remove(user);
   }
 
-  // ─── Internal seeder helper ──────────────────────────────────────────────────
+  // ─── Private helpers ─────────────────────────────────────────────────────────
 
-  /** Used only by AuthService legacy signup flow. */
-  async createUser(email: string, password: string): Promise<User> {
-    const user = this.userRepository.create({
-      name: email,
-      email,
-      password,
-      role: null
-    });
-    return this.userRepository.save(user);
+  /**
+   * Resolves a Role with strict error handling: 
+   * 404 for invalid IDs, 500 for missing system-critical roles (seeding issues).
+   */
+  private async getRoleByIdOrName(id?: string, name?: string): Promise<Role> {
+    if (id) {
+      const role = await this.roleRepository.findOne({ where: { id } });
+      if (!role) throw new NotFoundException(`Role with id "${id}" not found`);
+      return role;
+    }
+
+    if (name) {
+      const role = await this.roleRepository.findOne({ where: { name } });
+      if (!role) {
+        throw new InternalServerErrorException(`System role "${name}" is missing. Check seeder.`);
+      }
+      return role;
+    }
+
+    throw new InternalServerErrorException('Role resolution requires ID or Name.');
   }
 }

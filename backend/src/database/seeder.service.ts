@@ -108,10 +108,10 @@ export class SeederService implements OnApplicationBootstrap {
       });
 
       if (!role) {
-        this.logger.warn(
-          `Role "${seed.roleName}" not found — skipping user ${seed.email}`
+        throw new Error(
+          `Seeder: role "${seed.roleName}" not found when seeding user "${seed.email}". ` +
+          'Ensure seedRoles() completes successfully before seedUsers() is called.'
         );
-        continue;
       }
 
       const user = this.userRepository.create({

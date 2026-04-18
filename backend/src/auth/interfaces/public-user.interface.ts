@@ -8,7 +8,7 @@ export interface PublicUser {
   id: string;
   name: string;
   email: string;
-  role: Role | null;
+  role: Role;
   createdAt: Date;
   updatedAt: Date;
 }

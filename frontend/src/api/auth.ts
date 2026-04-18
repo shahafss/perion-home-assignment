@@ -1,20 +1,10 @@
 import { apiClient } from './axios';
+import { type User } from '../types/auth';
 
-export interface AuthRole {
-  id: string;
-  name: string;
-  permissions: string[];
-}
-
-export interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  role: AuthRole | null;
-}
+export type { User } from '../types/auth';
 
 export interface AuthApiResponse {
-  user: AuthUser;
+  user: User;
 }
 
 export const apiSelectUser = async (email: string): Promise<void> => {
