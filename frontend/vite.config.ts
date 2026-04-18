@@ -10,8 +10,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [vue(), vueJsx()],
     server: {
-      host: "0.0.0.0",
-      port: 5173,
+      host: true,
+      port: 3000,
       proxy: {
         "/api": {
           target: apiTarget,
