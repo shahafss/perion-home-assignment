@@ -1,8 +1,10 @@
 import { css } from "@emotion/css";
 import { defineComponent, onMounted, ref } from "vue";
-import { apiDeleteUser, apiGetUsers, type User } from "../api/users";
+import { apiGetUsers, type User } from "../api/users";
 import { usePermissions } from "../composables/usePermissions";
 import { PERMISSIONS } from "../types/permissions";
+import { UserModal } from "./UserModal";
+import { DeleteConfirmModal } from "./DeleteConfirmModal";
 
 export const UsersTable = defineComponent({
   name: "UsersTable",
@@ -11,6 +13,10 @@ export const UsersTable = defineComponent({
     const users = ref<User[]>([]);
     const loading = ref(true);
     const error = ref<string | null>(null);
+
+    const showAddModal = ref(false);
+    const editingUser = ref<User | null>(null);
+    const deletingUser = ref<User | null>(null);
 
     const loadUsers = async (): Promise<void> => {
       loading.value = true;
@@ -24,13 +30,8 @@ export const UsersTable = defineComponent({
       }
     };
 
-    const onDelete = async (id: string): Promise<void> => {
-      try {
-        await apiDeleteUser(id);
-        users.value = users.value.filter((u) => u.id !== id);
-      } catch {
-        error.value = "Failed to delete user.";
-      }
+    const onUserDeleted = (userId: string): void => {
+      users.value = users.value.filter((u) => u.id !== userId);
     };
 
     onMounted(() => {
@@ -42,7 +43,13 @@ export const UsersTable = defineComponent({
         <div class={sectionHeader}>
           <h2 class={sectionTitle}>Users</h2>
           {hasPermission(PERMISSIONS.UsersCreate) && (
-            <button type="button" class={addButton}>
+            <button
+              type="button"
+              class={addButton}
+              onClick={() => {
+                showAddModal.value = true;
+              }}
+            >
               + Add User
             </button>
           )}
@@ -59,7 +66,8 @@ export const UsersTable = defineComponent({
                   <th class={headerCell}>Name</th>
                   <th class={headerCell}>Email</th>
                   {!isViewer.value && <th class={headerCell}>Role</th>}
-                  {(hasPermission(PERMISSIONS.UsersEdit) || hasPermission(PERMISSIONS.UsersDelete)) && (
+                  {(hasPermission(PERMISSIONS.UsersEdit) ||
+                    hasPermission(PERMISSIONS.UsersDelete)) && (
                     <th class={headerCell}>Actions</th>
                   )}
                 </tr>
@@ -74,11 +82,18 @@ export const UsersTable = defineComponent({
                         <span class={roleBadge}>{user.role.name}</span>
                       </td>
                     )}
-                    {(hasPermission(PERMISSIONS.UsersEdit) || hasPermission(PERMISSIONS.UsersDelete)) && (
+                    {(hasPermission(PERMISSIONS.UsersEdit) ||
+                      hasPermission(PERMISSIONS.UsersDelete)) && (
                       <td class={cellClass}>
                         <div class={actionGroup}>
                           {hasPermission(PERMISSIONS.UsersEdit) && (
-                            <button type="button" class={editButton}>
+                            <button
+                              type="button"
+                              class={editButton}
+                              onClick={() => {
+                                editingUser.value = user;
+                              }}
+                            >
                               Edit
                             </button>
                           )}
@@ -86,7 +101,9 @@ export const UsersTable = defineComponent({
                             <button
                               type="button"
                               class={deleteButton}
-                              onClick={() => void onDelete(user.id)}
+                              onClick={() => {
+                                deletingUser.value = user;
+                              }}
                             >
                               Delete
                             </button>
@@ -99,6 +116,38 @@ export const UsersTable = defineComponent({
               </tbody>
             </table>
           </div>
+        )}
+
+        {showAddModal.value && (
+          <UserModal
+            onClose={() => {
+              showAddModal.value = false;
+            }}
+            onSaved={() => void loadUsers()}
+          />
+        )}
+
+        {editingUser.value && (
+          <UserModal
+            user={editingUser.value}
+            onClose={() => {
+              editingUser.value = null;
+            }}
+            onSaved={() => void loadUsers()}
+          />
+        )}
+
+        {deletingUser.value && (
+          <DeleteConfirmModal
+            user={deletingUser.value}
+            onClose={() => {
+              deletingUser.value = null;
+            }}
+            onDeleted={(userId: string) => {
+              onUserDeleted(userId);
+              deletingUser.value = null;
+            }}
+          />
         )}
       </section>
     );

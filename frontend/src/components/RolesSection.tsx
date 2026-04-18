@@ -2,14 +2,17 @@ import { css } from "@emotion/css";
 import { defineComponent, onMounted, ref } from "vue";
 import { apiGetRoles, type Role } from "../api/roles";
 import { usePermissions } from "../composables/usePermissions";
+import { PERMISSIONS } from "../types/permissions";
+import { RolePermissionsModal } from "./RolePermissionsModal";
 
 export const RolesSection = defineComponent({
   name: "RolesSection",
   setup() {
-    const { isAdmin } = usePermissions();
+    const { isAdmin, hasPermission } = usePermissions();
     const roles = ref<Role[]>([]);
     const loading = ref(true);
     const error = ref<string | null>(null);
+    const editingRole = ref<Role | null>(null);
 
     const loadRoles = async (): Promise<void> => {
       loading.value = true;
@@ -21,6 +24,12 @@ export const RolesSection = defineComponent({
       } finally {
         loading.value = false;
       }
+    };
+
+    const onRoleSaved = (updated: Role): void => {
+      roles.value = roles.value.map((role) =>
+        role.id === updated.id ? updated : role
+      );
     };
 
     onMounted(() => {
@@ -38,32 +47,52 @@ export const RolesSection = defineComponent({
 
         {!loading.value && !error.value && (
           <div class={rolesGrid}>
-            {roles.value.map((role) => (
-              <div class={roleCard} key={role.id}>
-                <div class={roleCardHeader}>
-                  <span class={roleName}>{role.name}</span>
-                  <button
-                    type="button"
-                    class={editButton(isAdmin.value)}
-                    disabled={!isAdmin.value}
-                    title={!isAdmin.value ? "Only Admins can edit roles" : undefined}
-                  >
-                    Edit Role
-                  </button>
+            {roles.value.map((role) => {
+              const canEdit =
+                isAdmin.value && hasPermission(PERMISSIONS.RolesEdit);
+              return (
+                <div class={roleCard} key={role.id}>
+                  <div class={roleCardHeader}>
+                    <span class={roleName}>{role.name}</span>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        class={editButton}
+                        onClick={() => {
+                          editingRole.value = role;
+                        }}
+                      >
+                        Edit Role
+                      </button>
+                    )}
+                  </div>
+                  <div class={permissionsList}>
+                    {role.permissions.map((p) => (
+                      <span class={permissionBadge} key={p}>
+                        {p}
+                      </span>
+                    ))}
+                    {role.permissions.length === 0 && (
+                      <span class={noPermissions}>No permissions assigned</span>
+                    )}
+                  </div>
                 </div>
-                <div class={permissionsList}>
-                  {role.permissions.map((p) => (
-                    <span class={permissionBadge} key={p}>
-                      {p}
-                    </span>
-                  ))}
-                  {role.permissions.length === 0 && (
-                    <span class={noPermissions}>No permissions assigned</span>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+        )}
+
+        {editingRole.value && (
+          <RolePermissionsModal
+            role={editingRole.value}
+            onClose={() => {
+              editingRole.value = null;
+            }}
+            onSaved={(updated: Role) => {
+              onRoleSaved(updated);
+              editingRole.value = null;
+            }}
+          />
         )}
       </section>
     );
@@ -125,21 +154,19 @@ const roleName = css({
   color: "#0f172a",
 });
 
-const editButton = (enabled: boolean) =>
-  css({
-    padding: "5px 12px",
-    fontSize: "12px",
-    fontWeight: 600,
-    border: "1px solid #cbd5e1",
-    borderRadius: "6px",
-    cursor: enabled ? "pointer" : "not-allowed",
-    background: enabled ? "#ffffff" : "#f8fafc",
-    color: enabled ? "#334155" : "#94a3b8",
-    opacity: enabled ? 1 : 0.6,
-    "&:hover:not(:disabled)": {
-      background: "#f1f5f9",
-    },
-  });
+const editButton = css({
+  padding: "5px 12px",
+  fontSize: "12px",
+  fontWeight: 600,
+  border: "1px solid #cbd5e1",
+  borderRadius: "6px",
+  cursor: "pointer",
+  background: "#ffffff",
+  color: "#334155",
+  "&:hover": {
+    background: "#f1f5f9",
+  },
+});
 
 const permissionsList = css({
   display: "flex",
