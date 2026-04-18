@@ -9,13 +9,17 @@ import {
   ParseUUIDPipe,
   Post,
   Put,
+  Req,
   UseGuards
 } from '@nestjs/common';
+import { omit } from 'lodash';
 import { Permissions } from '../auth/decorators/permissions.decorator';
+import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { User } from '../entities/User';
 import { CreateUserDto } from './dto/create-user.dto';
+import { PublicUserDto } from './dto/public-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
@@ -27,10 +31,20 @@ export class UserController {
   /**
    * GET /api/users
    * Accessible by any authenticated user (no specific permission required).
+   * Callers without the `roles:view` permission receive users with the `role`
+   * field omitted to prevent privilege-level data leakage.
    */
   @Get()
-  async findAll(): Promise<User[]> {
-    return this.userService.findAll();
+  async findAll(@Req() req: AuthenticatedRequest): Promise<PublicUserDto[]> {
+    const users = await this.userService.findAll();
+
+    const canViewRoles = (req.user.role?.permissions ?? []).includes('roles:view');
+
+    if (canViewRoles) {
+      return users;
+    }
+
+    return users.map((user) => omit(user, 'role', 'password'));
   }
 
   /**

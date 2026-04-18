@@ -79,7 +79,7 @@ export const UsersTable = defineComponent({
                     <td class={cellClass}>{user.email}</td>
                     {!isViewer.value && (
                       <td class={cellClass}>
-                        <span class={roleBadge}>{user.role.name}</span>
+                        <span class={roleBadge}>{user.role?.name}</span>
                       </td>
                     )}
                     {(hasPermission(PERMISSIONS.UsersEdit) ||

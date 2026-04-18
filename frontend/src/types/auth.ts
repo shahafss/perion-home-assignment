@@ -12,11 +12,11 @@ export interface Role {
 
 /**
  * Canonical User shape shared across all API modules and composables.
- * Role is guaranteed non-null — every user must have a role (DB constraint).
+ * `role` is optional — the API omits it for callers without `roles:view`.
  */
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: Role;
+  role?: Role;
 }
