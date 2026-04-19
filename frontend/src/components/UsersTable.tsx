@@ -60,6 +60,7 @@ export const UsersTable = defineComponent({
 
         {!loading.value && !error.value && (
           <div class={tableWrapper}>
+            <div class={tableScroll}>
             <table class={tableClass}>
               <thead>
                 <tr>
@@ -115,6 +116,7 @@ export const UsersTable = defineComponent({
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         )}
 
@@ -202,6 +204,12 @@ const tableWrapper = css({
   overflow: "hidden",
   background: "#ffffff",
   boxShadow: "0 4px 12px rgba(15, 23, 42, 0.05)",
+});
+
+const tableScroll = css({
+  overflowX: "auto",
+  width: "100%",
+  display: "block",
 });
 
 const tableClass = css({
