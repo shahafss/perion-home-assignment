@@ -4,66 +4,58 @@ import {
   apiLogin,
   apiLogout,
   apiMe,
+  apiSelectUser,
   apiSignup,
-  type AuthUser,
 } from "../api/auth";
+import { type User } from "../types/auth";
 
-const COOKIE_SESSION_TOKEN = "cookie-session";
-const token = ref<string | null>(null);
-const user = ref<AuthUser | null>(null);
-const initPromise = ref<Promise<void> | null>(null);
+const user = ref<User | null>(null);
+const initialized = ref(false);
 
 export function useAuth() {
-  const isAuthenticated = computed(() => !!token.value && !!user.value);
+  const isAuthenticated = computed(() => !!user.value);
 
-  const init = async (): Promise<void> => {
-    if (initPromise.value) {
-      await initPromise.value;
-      return;
-    }
-
-    initPromise.value = (async () => {
-      try {
-        const result = await apiMe();
-        token.value = COOKIE_SESSION_TOKEN;
-        user.value = result.user;
-      } catch (error) {
-        if (error instanceof AxiosError && error.response?.status === 401) {
-          token.value = null;
-          user.value = null;
-          return;
-        }
-
+  const fetchUser = async (): Promise<void> => {
+    try {
+      const result = await apiMe();
+      user.value = result.user;
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 401) {
+        user.value = null;
+      } else {
         throw error;
       }
-    })();
+    } finally {
+      initialized.value = true;
+    }
+  };
 
-    await initPromise.value;
+  const selectUser = async (email: string): Promise<void> => {
+    await apiSelectUser(email);
+    await fetchUser();
   };
 
   const login = async (email: string, password: string): Promise<void> => {
-    const result = await apiLogin(email, password);
-    token.value = COOKIE_SESSION_TOKEN;
-    user.value = result.user;
+    await apiLogin(email, password);
+    await fetchUser();
   };
 
   const signup = async (email: string, password: string): Promise<void> => {
-    const result = await apiSignup(email, password);
-    token.value = COOKIE_SESSION_TOKEN;
-    user.value = result.user;
+    await apiSignup(email, password);
+    await fetchUser();
   };
 
-  const logout = (): void => {
-    void apiLogout();
-    token.value = null;
+  const logout = async (): Promise<void> => {
+    await apiLogout();
     user.value = null;
   };
 
   return {
-    token,
     user,
+    initialized,
     isAuthenticated,
-    init,
+    fetchUser,
+    selectUser,
     login,
     signup,
     logout,

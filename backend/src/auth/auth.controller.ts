@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   HttpCode,
+  HttpStatus,
   Post,
   Req,
   Res,
@@ -11,6 +12,7 @@ import {
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dto/auth-credentials.dto';
+import { SelectAuthDto } from './dto/select-auth.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { AuthenticatedRequest } from './interfaces/authenticated-request.interface';
 import { PublicUser } from './interfaces/public-user.interface';
@@ -33,7 +35,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   async login(
     @Body() body: AuthCredentialsDto,
     @Res({ passthrough: true }) response: Response
@@ -43,21 +45,51 @@ export class AuthController {
     return { user };
   }
 
+  // ─── RBAC select auth ────────────────────────────────────────────────────────
+
+  /**
+   * POST /api/auth/select
+   * Accepts { email }, finds the matching pre-seeded user, signs a JWT, and
+   * sets it as an httpOnly cookie — identical cookie semantics to login/signup.
+   * No password required (assessment convenience endpoint).
+   */
+  @Post('select')
+  @HttpCode(HttpStatus.OK)
+  async select(
+    @Body() body: SelectAuthDto,
+    @Res({ passthrough: true }) response: Response
+  ): Promise<{ success: boolean }> {
+    const access_token = await this.authService.selectUser(body.email);
+    this.setAuthCookie(response, access_token);
+    return { success: true };
+  }
+
+  // ─── Current user ────────────────────────────────────────────────────────────
+
+  /**
+   * GET /api/auth/me
+   * Returns the full user object including role and permissions for the
+   * bearer of the current JWT.
+   */
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async me(@Req() request: AuthenticatedRequest): Promise<{ user: PublicUser }> {
-    const user = await this.authService.me(request.user.sub);
+    const user = await this.authService.me(request.user.id);
     return { user };
   }
 
+  // ─── Logout ──────────────────────────────────────────────────────────────────
+
   @Post('logout')
-  @HttpCode(200)
+  @HttpCode(HttpStatus.OK)
   logout(
     @Res({ passthrough: true }) response: Response
   ): { message: string } {
     response.clearCookie(ACCESS_TOKEN_COOKIE_NAME);
     return { message: 'Logged out successfully' };
   }
+
+  // ─── Private helpers ─────────────────────────────────────────────────────────
 
   private setAuthCookie(response: Response, token: string): void {
     response.cookie(ACCESS_TOKEN_COOKIE_NAME, token, {

@@ -1,13 +1,18 @@
 import { apiClient } from './axios';
+import { type User } from '../types/auth';
 
-export interface AuthUser {
-  id: string;
-  email: string;
-}
+export type { User } from '../types/auth';
 
 export interface AuthApiResponse {
-  user: AuthUser;
+  user: User;
 }
+
+export const apiSelectUser = async (email: string): Promise<void> => {
+  await apiClient.post<{ success: boolean }, { success: boolean }>(
+    '/auth/select',
+    { email }
+  );
+};
 
 export const apiSignup = async (
   email: string,
@@ -16,10 +21,7 @@ export const apiSignup = async (
   const response = await apiClient.post<
     AuthApiResponse,
     AuthApiResponse
-  >('/auth/signup', {
-    email,
-    password
-  });
+  >('/auth/signup', { email, password });
   return response;
 };
 
@@ -30,10 +32,7 @@ export const apiLogin = async (
   const response = await apiClient.post<
     AuthApiResponse,
     AuthApiResponse
-  >('/auth/login', {
-    email,
-    password
-  });
+  >('/auth/login', { email, password });
   return response;
 };
 

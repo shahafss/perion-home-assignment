@@ -12,5 +12,6 @@
     "experimentalDecorators": true,
     "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.js", "src/**/*.jsx"]
 }

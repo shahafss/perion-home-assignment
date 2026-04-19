@@ -1,0 +1,31 @@
+---
+description: Enforce Emotion styling with object notation only
+globs: frontend/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Styling Rules (Emotion)
+
+- Never use Tailwind classes or raw CSS files.
+- Use Emotion (`@emotion/react` or `@emotion/css`) for component styling.
+- Use Emotion object notation; do not use template literal style strings.
+- Do not use inline `style` attributes in JSX/TSX.
+
+```tsx
+// Bad
+<main style={{ maxWidth: 420, margin: "48px auto", fontFamily: "sans-serif" }} />
+```
+
+```tsx
+// Good
+import { css } from "@emotion/react";
+
+<main css={mainClass} />
+
+const mainClass = css({
+  maxWidth: 420,
+  margin: "48px auto",
+  fontFamily: "sans-serif",
+});
+
+```

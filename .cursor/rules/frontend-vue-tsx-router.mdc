@@ -1,0 +1,62 @@
+---
+description: Frontend Coding Standards: Vue 3, TSX, Emotion CSS, and Architectural Integrity
+globs: frontend/src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Core Stack Standards
+
+- **Component Engine**: Vue 3 with TypeScript and TSX (`.tsx`).
+- **Component Pattern**: Strictly use `defineComponent` with a `setup()` function returning a JSX render function.
+- **Naming & Exports**: 
+    - Use **Named Exports** for all symbols.
+    - `export default` is permitted ONLY for router-level entry points (Views).
+- **Type Safety**: Zero `any` policy. Define explicit interfaces for all data structures and API contracts.
+
+# Architectural Integrity (Separation of Concerns)
+
+- **Stateless Infrastructure**: Transport layers (e.g., Axios) must be stateless transporters. Do not store tokens or business state within configuration files.
+- **State Sovereignty**: Business logic and application state must reside exclusively within Composables/Stores.
+- **Immutability**: Prefer `const` and Vue reactivity (`ref`, `computed`). Avoid `let` for shared or global scope.
+
+# Styling (Emotion CSS)
+
+- **Implementation**: Use `@emotion/css` with **Object Notation**.
+- **Atomic Constants**: Define styles as standalone `const` variables.
+- **Dynamic Logic**: Use higher-order functions returning `css({})` for prop-driven styles.
+- **Organization**: Style constants must be grouped at the **bottom of the file**, keeping the UI logic and JSX at the top.
+
+# File Hygiene
+
+- **Imports**: Always use explicit named imports.
+
+## Reference Implementation Pattern
+
+```tsx
+import { defineComponent, css } from "vue";
+
+export const MyComponent = defineComponent({
+  name: "MyComponent",
+  props: {
+    status: String
+  },
+  setup(props) {
+    return () => (
+      <div class={containerStyle}>
+        <span class={statusStyle(props.status)}>Active</span>
+      </div>
+    );
+  },
+});
+
+const containerStyle = css({
+  display: 'flex',
+  padding: '1rem'
+});
+
+const statusStyle = (status?: string) => css({
+  color: status === 'active' ? 'green' : 'red',
+  fontWeight: 'bold'
+});
+
+export default MyComponent;
