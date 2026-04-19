@@ -30,7 +30,7 @@ export const DashboardView = defineComponent({
               {user && (
                 <span class={userInfo}>
                   Logged in as <strong>{user.name}</strong>
-                  <span class={rolePill}>{user.role.name}</span>
+                  {user.role?.name && <span class={rolePill}>{user.role.name}</span>}
                 </span>
               )}
               <button type="button" class={logoutButton} onClick={() => void onLogout()}>

@@ -60,7 +60,7 @@ export class AuthService {
       throw new NotFoundException(`No user found with email: ${normalizedEmail}`);
     }
 
-    return this.signToken(user);
+    return this.getAccessToken(this.toPublicUser(user));
   }
 
   // ─── Token helpers ───────────────────────────────────────────────────────────
@@ -90,15 +90,6 @@ export class AuthService {
   }
 
   // ─── Private helpers ─────────────────────────────────────────────────────────
-
-  private signToken(user: User): string {
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      permissions: user.role?.permissions ?? []
-    };
-    return this.jwtService.sign(payload);
-  }
 
   private normalizeEmail(email: string): string {
     return email.toLowerCase().trim();

@@ -8,7 +8,7 @@ import { RolePermissionsModal } from "./RolePermissionsModal";
 export const RolesSection = defineComponent({
   name: "RolesSection",
   setup() {
-    const { isAdmin, hasPermission } = usePermissions();
+    const { hasPermission } = usePermissions();
     const roles = ref<Role[]>([]);
     const loading = ref(true);
     const error = ref<string | null>(null);
@@ -47,38 +47,34 @@ export const RolesSection = defineComponent({
 
         {!loading.value && !error.value && (
           <div class={rolesGrid}>
-            {roles.value.map((role) => {
-              const canEdit =
-                isAdmin.value && hasPermission(PERMISSIONS.RolesEdit);
-              return (
-                <div class={roleCard} key={role.id}>
-                  <div class={roleCardHeader}>
-                    <span class={roleName}>{role.name}</span>
-                    {canEdit && (
-                      <button
-                        type="button"
-                        class={editButton}
-                        onClick={() => {
-                          editingRole.value = role;
-                        }}
-                      >
-                        Edit Role
-                      </button>
-                    )}
-                  </div>
-                  <div class={permissionsList}>
-                    {role.permissions.map((p) => (
-                      <span class={permissionBadge} key={p}>
-                        {p}
-                      </span>
-                    ))}
-                    {role.permissions.length === 0 && (
-                      <span class={noPermissions}>No permissions assigned</span>
-                    )}
-                  </div>
+            {roles.value.map((role) => (
+              <div class={roleCard} key={role.id}>
+                <div class={roleCardHeader}>
+                  <span class={roleName}>{role.name}</span>
+                  {hasPermission(PERMISSIONS.RolesEdit) && (
+                    <button
+                      type="button"
+                      class={editButton}
+                      onClick={() => {
+                        editingRole.value = role;
+                      } }
+                    >
+                      Edit Role
+                    </button>
+                  )}
                 </div>
-              );
-            })}
+                <div class={permissionsList}>
+                  {role.permissions.map((p) => (
+                    <span class={permissionBadge} key={p}>
+                      {p}
+                    </span>
+                  ))}
+                  {role.permissions.length === 0 && (
+                    <span class={noPermissions}>No permissions assigned</span>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
 

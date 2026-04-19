@@ -14,10 +14,14 @@ export class Role {
   @Column({ type: 'varchar', length: 100, unique: true })
   name!: string;
 
-  /**
-   * Stores permissions as a comma-separated list in a single column.
-   * Example value in DB: "users:view,users:edit,roles:view"
-   */
-  @Column({ type: 'simple-array', default: '' })
+  @Column({
+    type: 'text',
+    nullable: true,
+    transformer: {
+      to: (value: string[]): string => (value ?? []).join(','),
+      from: (value: string | null): string[] =>
+        value ? value.split(',').filter(Boolean) : [],
+    },
+  })
   permissions!: string[];
 }
